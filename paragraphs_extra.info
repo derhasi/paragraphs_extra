@@ -1,0 +1,5 @@
+name = Paragraphs Extras
+description = "Some small experimental improvements to paragraphs"
+core = 7.x
+
+dependencies[] = paragraphs

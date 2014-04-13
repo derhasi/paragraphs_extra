@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * @file
+ * Holds additional (experimental) stuff for paragraphs.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function paragraphs_extra_theme() {
+  return array(
+    'paragraphs_widget_item' => array(
+      'render element' => 'element',
+    ),
+  );
+}
+
+/**
+ * Implements hook_library().
+ */
+function paragraphs_extra_library() {
+  $libraries = array();
+  $libraries['paragraphs.collapse'] = array(
+    'title' => 'Paragraphs collapse',
+    'version' => '0.1',
+    'js' => array(
+      drupal_get_path('module', 'paragraphs_extra') . '/js/paragraphs.collapse.js' => array(),
+    ),
+    'css' => array(
+    ),
+  );
+  $libraries['paragraphs.summary'] = array(
+    'title' => 'Paragraphs summary',
+    'version' => '0.1',
+    'js' => array(
+      drupal_get_path('module', 'paragraphs_extra') . '/js/paragraphs.summary.js' => array(),
+    ),
+    'css' => array(
+    ),
+  );
+  return $libraries;
+}
+
+
+/**
+ * Implements hook_field_widget_form_alter().
+ */
+function paragraphs_extra_field_widget_form_alter(&$element, &$form_state, $context) {
+
+  // Add additional libraries and rendering to the paragraphs_embed widget.
+  if ($context['instance']['widget']['type'] == 'paragraphs_embed') {
+    $element['#attached']['library'][] = array('paragraphs_extra', 'paragraphs.collapse');
+    $element['#attached']['library'][] = array('paragraphs_extra', 'paragraphs.summary');
+
+    foreach (element_children($element) as $key) {
+      // Provide the theme function onyl for delta (not add_more, ...).
+      if (is_numeric($key)) {
+        $element[$key]['#theme'] = 'paragraphs_widget_item';
+      }
+    }
+  }
+}
+
+/**
+ * Renders the paragraph item in the widget form.
+ */
+function theme_paragraphs_widget_item($vars) {
+  $element =& $vars['element'];
+  $title = '';
+  $body = '';
+
+  // Grab the title and the rest as body from the nested elements.
+  foreach (element_children($element) as $key) {
+    if ($key == 'title') {
+      $title .= drupal_render($element[$key]);
+    }
+    else {
+      $body .= drupal_render($element[$key]);
+    }
+  }
+
+  $item_attributes = array(
+    'class' => array(
+      'paragraphs-widget-item',
+      'delta-' . $element['#delta'],
+    ),
+  );
+  if (!isset($element['#entity']->item_id)) {
+    $item_attributes['class'] = 'is-new';
+    $item_attributes['data-paragraph-item-closed'] = 0;
+  }
+  else {
+    $item_attributes['data-paragraph-item-closed'] = 1;
+  }
+
+  $output = '<div'. drupal_attributes($item_attributes) . '>';
+  $output .= '<div class="paragraphs-widget-item-title">' . $title . '</div>';
+  $output .= '<div class="paragraphs-widget-item-summary"></div>';
+  $output .= '<div class="paragraphs-widget-item-body">' . $body . '</div>';
+  $output .= '</div>';
+  return $output;
+}
+
+
