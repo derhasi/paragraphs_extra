@@ -52,7 +52,7 @@
     }
 
     // If status is
-    if (close > 0) {
+    if (close > 0 && !(itemContainer.find('[id*="confirm-delete-button"]').length > 0)) {
       itemBody.hide( "slow", function() {
         itemContainer.addClass('item-closed');
         itemContainer.attr('data-paragraph-item-closed', 1);
